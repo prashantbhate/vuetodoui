@@ -60,33 +60,8 @@ const cancelEdit = () => {
     <section id="todoform">
         <h2>Todo View</h2>
         <div v-if="error" class="error">{{ error }}</div>
-        <!-- <form v-if="!editingTodo" @submit.prevent="addTodo">
-            <fieldset>
-                <legend>Add: Todo</legend>
-                <InputWithError inputId="Username" label="Username" v-model:task="newTodo.user" v-model:error="validationErrors.user" placeholder="Username" />
-                <InputWithError inputId="Task" label="Task" v-model:task="newTodo.task" v-model:error="validationErrors.task" placeholder="Task (10-200 chars)" type="textarea" />
-                <InputWithError inputId="Date" label="Date" v-model:task="newTodo.targetDate" v-model:error="validationErrors.targetDate" type="date" :min="today" />
-            </fieldset>
-            <fieldset class=".grid">
-                <button type="submit" class="outline" :aria-busy="loading" :disabled="loading">Add Todo</button>
-                <button type="button" @click="resetForm">Reset</button>
-            </fieldset>
-        </form> -->
         <TodoForm v-if="!editingTodo" v-model:loading="loading" v-model:todo="newTodo" v-model:validationErrors="validationErrors" form-label="Add: Todo" submit-label="Add Todo" reset-label="Reset" @submit="addTodo" @reset="resetForm"/>
         <TodoForm v-else v-model:loading="loading"  v-model:todo="editingTodo" v-model:validationErrors="validationErrors"  form-label="Edit: Todo" submit-label="Update Todo" reset-label="Cancel" @submit="updateTodo" @reset="cancelEdit"/>
-<!-- 
-        <form  @submit.prevent="updateTodo">
-            <fieldset>
-                <legend>Edit: Todo</legend>
-                <InputWithError inputId="Username" label="Username" v-model:task="editingTodo.user" v-model:error="validationErrors.user" placeholder="Username" />
-                <InputWithError inputId="Task" label="Task" v-model:task="editingTodo.task" v-model:error="validationErrors.task" placeholder="Task (10-200 chars)" type="textarea" />
-                <InputWithError inputId="Date" label="Date" v-model:task="editingTodo.targetDate" v-model:error="validationErrors.targetDate" type="date" :min="today" />
-            </fieldset>
-            <fieldset class=".grid">
-                <button type="submit" :aria-busy="loading" :disabled="loading">Update Todo</button>
-                <button type="button" @click="cancelEdit">Cancel</button>
-            </fieldset>
-        </form> -->
     </section>
     <section id="todotable">
         <h2>Todo List</h2>
