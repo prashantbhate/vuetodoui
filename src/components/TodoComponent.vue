@@ -25,11 +25,11 @@ const error = ref(null)
 const validationErrors = ref({})
 
 const addTodo = async () => {
-    console.log("Adding newTodo",newTodo)
+    console.log("Adding newTodo",newTodo.value)
     resetForm()
 }
 const updateTodo = async () => {
-    console.log("updating editingTodo",editingTodo)
+    console.log("updating editingTodo",editingTodo.value)
     cancelEdit()
 }
 const deleteTodo = async (id) => {
