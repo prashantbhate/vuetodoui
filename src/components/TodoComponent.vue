@@ -1,14 +1,17 @@
 <script setup>
 import TodoForm from './TodoForm.vue';
 import { ref, computed } from 'vue'
+import TodoTable from './TodoTable.vue';
 import { TodoService } from '../services/TodoService.js'
 
 const todos = ref([{
+    id: '1',
     user: 'abcd',
     task: 'task123',
     done: false,
     targetDate: '12/12/2024'
 }, {
+    id: '2',
     user: 'abcd',
     task: 'task123',
     done: false,
@@ -89,9 +92,17 @@ const resetForm = () => {
     validationErrors.value = {}
 }
 
-const editTodo = (todo) => {
-    editingTodo.value = { ...todo } // Create a copy to avoid direct mutations
+const editTodo = (id) => {
+    console.log("edit id", id)
+    const index = todos.value.findIndex(todo => todo.id === id)
+    if (index !== -1) {
+        const todo = todos.value[index]
+        const todoCopy = { ...todo }
+        console.log(todoCopy)
+        editingTodo.value = todoCopy // Create a copy to avoid direct mutations
+    }
 }
+
 
 const cancelEdit = () => {
     editingTodo.value = null
@@ -104,34 +115,13 @@ fetchTodos()
     <section id="todoform">
         <h2>Todo View</h2>
         <div v-if="error" class="errormessage">{{ error }}</div>
-        <TodoForm v-if="!editingTodo" v-model:loading="loading" v-model:todo="newTodo" v-model:validationErrors="validationErrors" form-label="Add: Todo" submit-label="Add Todo" reset-label="Reset" @submit="addTodo" @reset="resetForm" />
-        <TodoForm v-else v-model:loading="loading" v-model:todo="editingTodo" v-model:validationErrors="validationErrors" form-label="Edit: Todo" submit-label="Update Todo" reset-label="Cancel" @submit="updateTodo" @reset="cancelEdit" />
+        <TodoForm v-if="!editingTodo" :loading="loading" v-model:todo="newTodo" v-model:validationErrors="validationErrors" form-label="Add: Todo" submit-label="Add Todo" reset-label="Reset" @submit="addTodo" @reset="resetForm" />
+        <TodoForm v-else :loading="loading" v-model:todo="editingTodo" v-model:validationErrors="validationErrors" form-label="Edit: Todo" submit-label="Update Todo" reset-label="Cancel" @submit="updateTodo" @reset="cancelEdit" />
     </section>
     <section id="todotable">
         <h2>Todo List</h2>
         <div>
-            <table v-if="todos.length">
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        <th>Task</th>
-                        <th>Date</th>
-                        <th>Done?</th>
-                        <th>Edit</th>
-                        <th>Delete</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="todo in todos" :key="todo.id">
-                        <td>{{ todo.user }} </td>
-                        <td>{{ todo.task }}</td>
-                        <td>{{ todo.targetDate }}</td>
-                        <td><input type="checkbox" v-model="todo.done" /></td>
-                        <td><button @click="editTodo(todo)">Edit</button></td>
-                        <td><button @click="deleteTodo(todo.id)">Delete</button></td>
-                    </tr>
-                </tbody>
-            </table>
+            <TodoTable :loading="loading" :todos="todos" @edit-click="editTodo" @remove-click="deleteTodo" />
         </div>
     </section>
 </template>
