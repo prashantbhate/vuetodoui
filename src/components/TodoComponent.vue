@@ -1,6 +1,7 @@
 <script setup>
 import TodoForm from './TodoForm.vue';
 import { ref, computed } from 'vue'
+import { TodoService } from '../services/TodoService.js'
 
 const todos = ref([{
     user: 'abcd',
@@ -24,18 +25,60 @@ const loading = ref(false)
 const error = ref(null)
 const validationErrors = ref({})
 
+const fetchTodos = async () => {
+    loading.value = true
+    try {
+        todos.value = await TodoService.getTodos()
+    } catch (err) {
+        error.value = err.message
+    } finally {
+        loading.value = false
+    }
+}
+
 const addTodo = async () => {
-    console.log("Adding newTodo",newTodo.value)
-    resetForm()
+    loading.value = true
+    try {
+        const todoToAdd = { ...newTodo.value }
+        const result = await TodoService.addTodo(todoToAdd)
+        todos.value.push(result)
+        resetForm()
+    } catch (err) {
+        validationErrors.value = err
+    } finally {
+        loading.value = false
+    }
 }
+
 const updateTodo = async () => {
-    console.log("updating editingTodo",editingTodo.value)
-    cancelEdit()
+    if (!editingTodo.value) return
+    loading.value = true
+    try {
+        const updatedTodo = { ...editingTodo.value }
+        const result = await TodoService.updateTodo(updatedTodo)
+        const index = todos.value.findIndex(todo => todo.id === updatedTodo.id)
+        if (index !== -1) todos.value[index] = result
+        editingTodo.value = null // Clear editing state
+    } catch (err) {
+        validationErrors.value = err
+    } finally {
+        loading.value = false
+    }
 }
+
 const deleteTodo = async (id) => {
-    console.log("deleting id",id)
-    cancelEdit()
+    loading.value = true
+    try {
+        await TodoService.deleteTodo(id)
+        todos.value = todos.value.filter(todo => todo.id !== id)
+    } catch (err) {
+        error.value = err.message
+    } finally {
+        loading.value = false
+    }
 }
+
+
 const resetForm = () => {
     newTodo.value = {
         user: '',
@@ -45,6 +88,7 @@ const resetForm = () => {
     }
     validationErrors.value = {}
 }
+
 const editTodo = (todo) => {
     editingTodo.value = { ...todo } // Create a copy to avoid direct mutations
 }
@@ -54,14 +98,14 @@ const cancelEdit = () => {
     validationErrors.value = {}
 }
 
-
+fetchTodos()
 </script>
 <template>
     <section id="todoform">
         <h2>Todo View</h2>
-        <div v-if="error" class="error">{{ error }}</div>
-        <TodoForm v-if="!editingTodo" v-model:loading="loading" v-model:todo="newTodo" v-model:validationErrors="validationErrors" form-label="Add: Todo" submit-label="Add Todo" reset-label="Reset" @submit="addTodo" @reset="resetForm"/>
-        <TodoForm v-else v-model:loading="loading"  v-model:todo="editingTodo" v-model:validationErrors="validationErrors"  form-label="Edit: Todo" submit-label="Update Todo" reset-label="Cancel" @submit="updateTodo" @reset="cancelEdit"/>
+        <div v-if="error" class="errormessage">{{ error }}</div>
+        <TodoForm v-if="!editingTodo" v-model:loading="loading" v-model:todo="newTodo" v-model:validationErrors="validationErrors" form-label="Add: Todo" submit-label="Add Todo" reset-label="Reset" @submit="addTodo" @reset="resetForm" />
+        <TodoForm v-else v-model:loading="loading" v-model:todo="editingTodo" v-model:validationErrors="validationErrors" form-label="Edit: Todo" submit-label="Update Todo" reset-label="Cancel" @submit="updateTodo" @reset="cancelEdit" />
     </section>
     <section id="todotable">
         <h2>Todo List</h2>
@@ -91,4 +135,8 @@ const cancelEdit = () => {
         </div>
     </section>
 </template>
-<style scoped></style>
+<style scoped>
+.errormessage {
+    color: red;
+}
+</style>
