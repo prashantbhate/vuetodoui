@@ -1,6 +1,5 @@
 <script setup>
 const props = defineProps([
-    "error",
     "type",
     "placeholder",
     "label",
