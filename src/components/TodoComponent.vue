@@ -23,38 +23,41 @@ const fetchTodos = async () => {
 const addTodo = async () => {
     console.log("Adding newTodo", newTodo.value)
     await todoStore.addTodo(newTodo.value);
-    resetForm()
+    if (!todoStore.hasError) resetForm()
 }
 const updateTodo = async () => {
     console.log("updating editingTodo", editingTodo.value)
     await todoStore.updateTodo(editingTodo.value);
-    cancelEdit()
+    if (!todoStore.hasError) cancelEdit()
 }
 const deleteTodo = async (id) => {
     console.log("deleting id", id)
     await todoStore.deleteTodo(id);
-    cancelEdit()
+}
+const editTodo = (id) => {
+    console.log("edit id", id)
+    todoStore.clearErrors()
+    const todo = todoStore.todos.find((t) => t.id === id);
+    if (todo) {
+        editingTodo.value = { ...todo }; // Create a copy
+    }
 }
 const resetForm = () => {
+    clearForm()
+    todoStore.clearErrors()
+}
+const cancelEdit = () => {
+    clearForm()
+    todoStore.clearErrors()
+}
+const clearForm = () => {
     newTodo.value = {
         user: '',
         task: '',
         done: false,
         targetDate: ''
     }
-    todoStore.validationErrors = {}
-}
-const editTodo = (id) => {
-    console.log("edit id", id)
-    const todo = todoStore.todos.find((t) => t.id === id);
-    if (todo) {
-        editingTodo.value = { ...todo }; // Create a copy
-    }
-}
-
-const cancelEdit = () => {
     editingTodo.value = null
-    todoStore.validationErrors = {}
 }
 
 fetchTodos()

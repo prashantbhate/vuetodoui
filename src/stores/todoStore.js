@@ -8,6 +8,10 @@ export const useTodoStore = defineStore('todoStore', {
         error: null,
         validationErrors: {},
     }),
+    getters: {
+        hasError: (state) => state.error || Object.keys(state.validationErrors).length
+    },
+
     actions: {
         async fetchTodos() {
             this.loading = true;
@@ -23,28 +27,60 @@ export const useTodoStore = defineStore('todoStore', {
             const errors = TodoModel.validate(newTodo);
             if (Object.keys(errors).length > 0) {
                 this.validationErrors = errors;
+                return;
             }
 
-            // Add Service.addTodo()
+            try {
+                const result = await TodoService.addTodo(newTodo)
+                this.todos.push(result)
+                this.clearErrors();
+            } catch (err) {
+                this.error = err
+            } finally {
+                this.loading = false
+            }
 
 
         },
         async updateTodo(updatedTodo) {
-            const index = this.todos.findIndex((todo) => todo.id === updatedTodo.id);
-            if (index !== -1) {
-                this.todos[index] = { ...updatedTodo };
-            } else {
-                this.error = 'Todo not found';
+            const errors = TodoModel.validate(updatedTodo);
+            if (Object.keys(errors).length > 0) {
+                this.validationErrors = errors;
+                return;
             }
 
-            // Add Service.updateTodo()
+            try {
+                const result = await TodoService.updateTodo(updatedTodo)
 
+                // If valid, update the todo
+                const index = this.todos.findIndex((todo) => todo.id === updatedTodo.id);
+                if (index !== -1) {
+                    this.todos[index] = { ...updatedTodo };
+                    this.clearErrors();
+                } else {
+                    this.error = 'Todo not found';
+                }
+            } catch (err) {
+                this.error = err
+            } finally {
+                this.loading = false
+            }
 
         },
         async deleteTodo(id) {
-            this.todos = this.todos.filter((todo) => todo.id !== id);
+            try {
+                await TodoService.deleteTodo(id)
+                this.todos = this.todos.filter((todo) => todo.id !== id);
+            } catch (err) {
+                this.error = err
+            } finally {
+                this.loading = false
+            }
+        },
 
-            // Add Service.deleteTodo()
+        async clearErrors() {
+            this.validationErrors = {}; // Clear errors
+            this.error = null
         },
     },
 });
