@@ -1,22 +1,13 @@
 <script setup>
-import TodoForm from './TodoForm.vue';
-import { ref, computed } from 'vue'
-import TodoTable from './TodoTable.vue';
-import { TodoService } from '../services/TodoService.js'
 
-const todos = ref([{
-    id: '1',
-    user: 'abcd',
-    task: 'task123',
-    done: false,
-    targetDate: '12/12/2024'
-}, {
-    id: '2',
-    user: 'abcd',
-    task: 'task123',
-    done: false,
-    targetDate: '12/12/2024'
-}])
+import { useTodoStore } from '../stores/todoStore';
+import TodoForm from './TodoForm.vue';
+import { ref } from 'vue'
+import TodoTable from './TodoTable.vue';
+
+
+const todoStore = useTodoStore();
+
 const newTodo = ref({
     user: '',
     task: '',
@@ -24,89 +15,49 @@ const newTodo = ref({
     targetDate: ''
 })
 const editingTodo = ref(null)
-const loading = ref(false)
-const error = ref(null)
-const validationErrors = ref({})
 
 const fetchTodos = async () => {
-    loading.value = true
-    try {
-        todos.value = await TodoService.getTodos()
-    } catch (err) {
-        error.value = err.message
-    } finally {
-        loading.value = false
-    }
+    await todoStore.fetchTodos()
 }
 
 const addTodo = async () => {
-    loading.value = true
-    try {
-        const todoToAdd = { ...newTodo.value }
-        const result = await TodoService.addTodo(todoToAdd)
-        todos.value.push(result)
-        resetForm()
-    } catch (err) {
-        validationErrors.value = err
-    } finally {
-        loading.value = false
-    }
+    console.log("Adding newTodo", newTodo.value)
+    await todoStore.addTodo(newTodo.value);
+    if (!todoStore.hasError) resetForm()
 }
-
 const updateTodo = async () => {
-    if (!editingTodo.value) return
-    loading.value = true
-    try {
-        const updatedTodo = { ...editingTodo.value }
-        const result = await TodoService.updateTodo(updatedTodo)
-        const index = todos.value.findIndex(todo => todo.id === updatedTodo.id)
-        if (index !== -1) todos.value[index] = result
-        editingTodo.value = null // Clear editing state
-    } catch (err) {
-        validationErrors.value = err
-    } finally {
-        loading.value = false
-    }
+    console.log("updating editingTodo", editingTodo.value)
+    await todoStore.updateTodo(editingTodo.value);
+    if (!todoStore.hasError) cancelEdit()
 }
-
 const deleteTodo = async (id) => {
-    loading.value = true
-    try {
-        await TodoService.deleteTodo(id)
-        todos.value = todos.value.filter(todo => todo.id !== id)
-    } catch (err) {
-        error.value = err.message
-    } finally {
-        loading.value = false
+    console.log("deleting id", id)
+    await todoStore.deleteTodo(id);
+}
+const editTodo = (id) => {
+    console.log("edit id", id)
+    todoStore.clearErrors()
+    const todo = todoStore.todos.find((t) => t.id === id);
+    if (todo) {
+        editingTodo.value = { ...todo }; // Create a copy
     }
 }
-
-
 const resetForm = () => {
+    clearForm()
+    todoStore.clearErrors()
+}
+const cancelEdit = () => {
+    clearForm()
+    todoStore.clearErrors()
+}
+const clearForm = () => {
     newTodo.value = {
         user: '',
         task: '',
         done: false,
         targetDate: ''
     }
-    validationErrors.value = {}
-}
-
-const editTodo = (id) => {
-    console.log("edit id", id)
-    const index = todos.value.findIndex(todo => todo.id === id)
-    if (index !== -1) {
-        const todo = todos.value[index]
-        const todoCopy = { ...todo }
-        console.log(todoCopy)
-        editingTodo.value = todoCopy // Create a copy to avoid direct mutations
-    }
-}
-
-
-const cancelEdit = () => {
     editingTodo.value = null
-    validationErrors.value = {}
 }
 
 fetchTodos()
@@ -114,14 +65,14 @@ fetchTodos()
 <template>
     <section id="todoform">
         <h2>Todo View</h2>
-        <div v-if="error" class="errormessage">{{ error }}</div>
-        <TodoForm v-if="!editingTodo" :loading="loading" v-model:todo="newTodo" v-model:validationErrors="validationErrors" form-label="Add: Todo" submit-label="Add Todo" reset-label="Reset" @submit="addTodo" @reset="resetForm" />
-        <TodoForm v-else :loading="loading" v-model:todo="editingTodo" v-model:validationErrors="validationErrors" form-label="Edit: Todo" submit-label="Update Todo" reset-label="Cancel" @submit="updateTodo" @reset="cancelEdit" />
+        <div v-if="todoStore.error" class="errormessage">{{ todoStore.error }}</div>
+        <TodoForm v-if="!editingTodo" :loading="todoStore.loading" v-model:todo="newTodo" v-model:validationErrors="todoStore.validationErrors" form-label="Add: Todo" submit-label="Add Todo" reset-label="Reset" @submit="addTodo" @reset="resetForm" />
+        <TodoForm v-else :todoStore.loading="todoStore.loading" v-model:todo="editingTodo" v-model:validationErrors="todoStore.validationErrors" form-label="Edit: Todo" submit-label="Update Todo" reset-label="Cancel" @submit="updateTodo" @reset="cancelEdit" />
     </section>
     <section id="todotable">
         <h2>Todo List</h2>
         <div>
-            <TodoTable :loading="loading" :todos="todos" @edit-click="editTodo" @remove-click="deleteTodo" />
+            <TodoTable :loading="todoStore.loading" :todos="todoStore.todos" @edit-click="editTodo" @remove-click="deleteTodo" />
         </div>
     </section>
 </template>
