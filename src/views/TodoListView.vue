@@ -4,11 +4,12 @@ import { useTodoStore } from '../stores/todoStore'
 import TodoTable from '../components/TodoTable.vue'
 import { useRouter } from 'vue-router'
 import TodoCards from '@/components/TodoCards.vue';
+import { useStorage } from '@vueuse/core';
 
 const todoStore = useTodoStore()
 const router = useRouter()
 
-const showCard = ref('table')
+const showCard = useStorage('todo-view-preference', 'table');
 
 const editTodo = (id) => {
     router.push({ name: 'TodoEdit', params: { id } })
@@ -21,6 +22,7 @@ const deleteTodo = async (id) => {
 onMounted(async () => {
     await todoStore.fetchTodos()
 })
+
 </script>
 <template>
     <section id="todo-list">
