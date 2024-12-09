@@ -7,7 +7,9 @@ const API_BASE_URL = "http://localhost:8080/todos";
 export const TodoService = {
   async getTodos() {
     try {
-      const response = await axios.get(API_BASE_URL);
+      const userStore = useUserStore();
+      const user = userStore.username
+      const response = await axios.get(`${API_BASE_URL}/users/${user}`);
       return response.data;
     } catch (error) {
       throw new Error("Failed to fetch todos");
