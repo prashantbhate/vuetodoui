@@ -2,7 +2,7 @@
   <form @submit.prevent="submitHandler">
     <fieldset>
       <legend>{{ formLabel }}</legend>
-      <InputWithError inputId="Username" label="Username" v-model:task="todo.user" v-model:error="validationErrors.user" placeholder="Username" />
+      <InputWithError inputId="Title" label="Title" v-model:task="todo.title" v-model:error="validationErrors.title" placeholder="Title (4-10) chars" />
       <InputWithError inputId="Task" label="Task" v-model:task="todo.task" v-model:error="validationErrors.task" placeholder="Task (10-200 chars)" type="textarea" />
       <InputWithError inputId="Date" label="Date" v-model:task="todo.targetDate" v-model:error="validationErrors.targetDate" type="date" :min="today" />
     </fieldset>

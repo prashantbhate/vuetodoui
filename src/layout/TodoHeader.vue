@@ -1,10 +1,16 @@
 <script setup>
 import PicoThemeToggle from '@/components/PicoThemeToggle.vue';
+import { useUserStore } from '@/stores/userStore';
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+const userStore = useUserStore();
 const logout = () => {
-    console.log("logout")
+    //cleanup
+    userStore.logout()
+    // Redirect to login page
+
+    router.replace({ path: "/login" });
 }
 </script>
 <template>

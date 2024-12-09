@@ -1,5 +1,6 @@
 import axios from "axios";
 import { TodoModel } from "./TodoModel";
+import { useUserStore } from "@/stores/userStore";
 
 const API_BASE_URL = "http://localhost:8080/todos";
 
@@ -18,6 +19,8 @@ export const TodoService = {
     if (Object.keys(validationErrors).length > 0) {
       throw validationErrors;
     }
+    const userStore = useUserStore();
+    todo.user = userStore.username
 
     try {
       const response = await axios.post(API_BASE_URL, todo);
@@ -32,7 +35,8 @@ export const TodoService = {
     if (Object.keys(validationErrors).length > 0) {
       throw validationErrors;
     }
-
+    const userStore = useUserStore();
+    todo.user = userStore.username
     try {
       const response = await axios.put(`${API_BASE_URL}/${todo.id}`, todo);
       return response.data;

@@ -1,7 +1,9 @@
 <template>
-    <footer>Hi user</footer>
+    <footer>Hi '{{ useUserStore().username }} '</footer>
 </template>
 <script setup>
+import { useUserStore } from '@/stores/userStore';
+
 
 </script>
 <style scoped>
