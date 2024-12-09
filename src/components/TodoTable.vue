@@ -2,7 +2,7 @@
     <table v-if="todos && todos.length">
         <thead>
             <tr>
-                <th>User</th>
+                <th>Title</th>
                 <th>Task</th>
                 <th>Date</th>
                 <th>Done?</th>
@@ -12,7 +12,7 @@
         </thead>
         <tbody>
             <tr v-for="todo in todos" :key="todo.id">
-                <td>{{ todo.user }} </td>
+                <td>{{ todo.title }}({{ todo.user }}) </td>
                 <td>{{ todo.task }}</td>
                 <td>{{ todo.targetDate }}</td>
                 <td><input type="checkbox" v-model="todo.done" /></td>

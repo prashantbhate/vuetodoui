@@ -2,7 +2,7 @@
     <div v-if="todos && todos.length" class="container">
         <article v-for="todo in todos" :key="todo.id" class="box">
             <header>
-                <h3>Title</h3>
+                <h3>{{ todo.title }}</h3>
                 <p><strong>Date:</strong> {{ todo.targetDate }}</p>
             </header>
             <p><strong>Task:</strong> {{ todo.task }}</p>

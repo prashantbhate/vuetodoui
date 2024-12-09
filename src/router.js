@@ -8,11 +8,25 @@ import SignupView from './views/SignupView.vue'
 import AuthLayout from './layout/AuthLayout.vue'
 import HomeLayout from './layout/HomeLayout.vue'
 
+import { useUserStore } from './stores/userStore';
+
+function isLoggedIn() {
+    const userStore = useUserStore()
+    return userStore.isAuthenticated
+}
+
 const routes = [
     {
         path: "/login",
         component: AuthLayout,
         children: [{ path: "", component: LoginView }],
+        beforeEnter: (to, from, next) => {
+            if (isLoggedIn()) {
+                next({ path: "/" });
+            } else {
+                next();
+            }
+        }
     },
     {
         path: "/signup",
@@ -27,11 +41,13 @@ const routes = [
                 path: '/',
                 name: 'TodoList',
                 component: TodoListView,
+                meta: { requiresAuth: true }
             },
             {
                 path: '/add',
                 name: 'TodoAdd',
                 component: TodoAddView,
+                meta: { requiresAuth: true }
             },
             {
                 path: '/edit/:id',
@@ -39,6 +55,7 @@ const routes = [
                 component: TodoEditView,
                 props: true,
             }],
+        meta: { requiresAuth: true }
     },
     {
         path: '/:pathMatch(.*)*',
@@ -53,5 +70,12 @@ const router = createRouter({
     routes
 })
 
+router.beforeEach((to, from, next) => {
+    if (to.meta.requiresAuth && !isLoggedIn()) {
+        next({ path: "/login" });
+    } else {
+        next();
+    }
+});
 
 export default router
