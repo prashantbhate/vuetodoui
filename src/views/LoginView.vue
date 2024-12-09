@@ -1,6 +1,6 @@
 <script setup>
 </script>
 <template>
-  <router-view />
+    <h1>Sign in</h1>
 </template>
 <style scoped></style>
