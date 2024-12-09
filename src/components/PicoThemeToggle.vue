@@ -6,7 +6,6 @@ const theme = ref('auto');
 const applyTheme = () => {
     if (theme.value === 'auto') {
         const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', systemTheme);
         theme.value = systemTheme;
     } else {
         document.documentElement.setAttribute('data-theme', theme.value);
