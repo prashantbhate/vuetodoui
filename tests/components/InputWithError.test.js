@@ -1,7 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { describe, it, expect, vi } from 'vitest';
 import InputWithError from '@/components/InputWithError.vue';
-import { ref } from 'vue';
 
 describe('InputWithError.vue', () => {
     it('renders an input if "type" is "text"', async () => {
@@ -17,6 +16,10 @@ describe('InputWithError.vue', () => {
                 'onUpdate:error': (e) => wrapper.setProps({ error: e })
             },
         });
+
+        console.log(wrapper.html())
+
+
 
         const input = wrapper.find('input');
         expect(input.exists()).toBe(true);
@@ -35,7 +38,7 @@ describe('InputWithError.vue', () => {
         expect(errorMsg.text()).toBe('Some error');
 
     });
-    it('renders an input if "type" is "date"', async () => {
+    it('renders an input if "type" is "date" and no errors', async () => {
         const wrapper = mount(InputWithError, {
             props: {
                 type: 'date',
@@ -45,7 +48,7 @@ describe('InputWithError.vue', () => {
                 placeholder: 'Enter text',
                 task: '2018-01-02',
                 'onUpdate:task': (e) => wrapper.setProps({ task: e }),
-                error: 'Some error',
+                error: '',
                 'onUpdate:error': (e) => wrapper.setProps({ error: e })
             },
         });
@@ -55,7 +58,7 @@ describe('InputWithError.vue', () => {
         expect(input.attributes('type')).toBe('date');
         expect(input.attributes('placeholder')).toBe('Enter text');
         expect(input.attributes('min')).toBe("2018-01-01");
-        expect(input.attributes('aria-invalid')).toBe("true");
+        expect(input.attributes('aria-invalid')).toBe("false");
         expect(input.element.value).toBe('2018-01-02');
 
         const label = wrapper.find('label');
@@ -64,8 +67,7 @@ describe('InputWithError.vue', () => {
         expect(label.attributes('for')).toBe('test-id');
 
         const errorMsg = wrapper.find('small');
-        expect(errorMsg.exists()).toBe(true);
-        expect(errorMsg.text()).toBe('Some error');
+        expect(errorMsg.exists()).toBe(false);
 
     });
     it('renders a textarea if "type" is "textarea"', () => {
@@ -98,11 +100,13 @@ describe('InputWithError.vue', () => {
         expect(errorMsg.text()).toBe('Some error');
     });
 
-    it('test two way binds for the "task" and "error" works', async () => {
+    it.each([
+        ["textarea"], ["text"]
+    ])('(%s) test two way binds for the "task" and "error" works', async (input_type) => {
 
         const wrapper = mount(InputWithError, {
             props: {
-                type: 'text',
+                type: input_type,
                 task: 'initial task',
                 'onUpdate:task': (e) => wrapper.setProps({ task: e }),
                 error: 'initial error',
@@ -112,7 +116,9 @@ describe('InputWithError.vue', () => {
 
         // before
 
-        var input = wrapper.find('input');
+        var input = input_type === 'textarea' ? wrapper.find('textarea') : wrapper.find('input');
+
+        expect(input.exists()).toBe(true);
         expect(input.attributes('aria-invalid')).toBe("true");
         expect(input.element.value).toBe('initial task');
 
@@ -120,28 +126,25 @@ describe('InputWithError.vue', () => {
         expect(errorMsg.exists()).toBe(true);
         expect(errorMsg.text()).toBe('initial error');
 
-        // change in parent
+        // make changes in parent
         await wrapper.setProps({
             task: "updated1",
             error: "updated1",
         });
-
         expect(wrapper.props('task')).toBe('updated1')
         expect(wrapper.vm.task).toBe('updated1');
 
-        // check child
+        // assert changes in child : text and error updated
         expect(input.element.value).toBe('updated1');
         expect(input.attributes('aria-invalid')).toBe("true");
 
         expect(errorMsg.exists()).toBe(true);
         expect(wrapper.vm.error).toBe('updated1');
 
-
-        // change in child
+        // make changes in child
         await input.setValue("updated3")
 
-
-        // assert change in parent
+        // assert changes in parent : text updated and error cleared
         expect(input.attributes('aria-invalid')).toBe("false");
         expect(wrapper.props('task')).toBe('updated3')
         expect(wrapper.vm.task).toBe('updated3');
