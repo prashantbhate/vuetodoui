@@ -4,35 +4,15 @@ import InputWithError from '@/components/InputWithError.vue';
 
 describe('InputWithError.vue', () => {
 
-    const testCases = [
-        {
-            type: 'date',
-            label: 'Test Label',
-            inputId: 'test-id',
-            min: "2018-01-01",
-            placeholder: 'Enter text',
-            task: '2018-01-02',
-            error: 'Some error'
-        }, , {
-            type: "text",
-            label: 'Test Label',
-            inputId: 'test-id',
-            placeholder: 'Enter text',
-            task: 'task1',
-            error: ''
-        }, {
-            type: "textarea",
-            label: 'Test Label',
-            inputId: 'test-id',
-            placeholder: 'Enter text',
-            task: 'task1',
-            error: 'Some error',
-        }
-    ]
-
-    it.each(testCases)('renders an input if "type" is "text"', async (props) => {
-        props = {
-            ...props,
+    it.each`type             | label           | inputId     | min            | placeholder    | task           | error        
+            ${'date'}        | ${'Test Label'} | ${'test-id'}| ${'2018-01-01'}| ${'Enter text'}| ${'2018-01-02'}| ${'Some error'}
+            ${'text'}        | ${'Test Label'} | ${'test-id'}| ${undefined}   | ${'Enter text'}| ${'task1'}     | ${''}        
+            ${'textarea'}    | ${'Test Label'} | ${'test-id'}| ${undefined}   | ${'Enter text'}| ${'task1'}     | ${'Some error'}
+            `('with type=$type it renders $type input', async (
+        { type, label, inputId, min, placeholder, task, error }
+    ) => {
+        const props = {
+            type, label, inputId, min, placeholder, task, error,
             'onUpdate:task': (e) => wrapper.setProps({ task: e }),
             'onUpdate:error': (e) => wrapper.setProps({ error: e })
         };
@@ -56,10 +36,10 @@ describe('InputWithError.vue', () => {
         expect(input.attributes('placeholder')).toBe('Enter text');
         expect(input.element.value).toBe(props.task);
 
-        const label = wrapper.find('label');
-        expect(label.exists()).toBe(true);
-        expect(label.text()).toBe('Test Label');
-        expect(label.attributes('for')).toBe('test-id');
+        const label1 = wrapper.find('label');
+        expect(label1.exists()).toBe(true);
+        expect(label1.text()).toBe('Test Label');
+        expect(label1.attributes('for')).toBe('test-id');
 
         const errorMsg = wrapper.find('small');
         if (props.error) {
