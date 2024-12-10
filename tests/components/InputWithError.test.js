@@ -3,30 +3,58 @@ import { describe, it, expect, vi } from 'vitest';
 import InputWithError from '@/components/InputWithError.vue';
 
 describe('InputWithError.vue', () => {
-    it('renders an input if "type" is "text"', async () => {
-        const wrapper = mount(InputWithError, {
-            props: {
-                type: 'text',
-                label: 'Test Label',
-                inputId: 'test-id',
-                placeholder: 'Enter text',
-                task: 'task1',
-                'onUpdate:task': (e) => wrapper.setProps({ task: e }),
-                error: 'Some error',
-                'onUpdate:error': (e) => wrapper.setProps({ error: e })
-            },
-        });
 
-        console.log(wrapper.html())
+    const testCases = [
+        {
+            type: 'date',
+            label: 'Test Label',
+            inputId: 'test-id',
+            min: "2018-01-01",
+            placeholder: 'Enter text',
+            task: '2018-01-02',
+            error: 'Some error'
+        }, , {
+            type: "text",
+            label: 'Test Label',
+            inputId: 'test-id',
+            placeholder: 'Enter text',
+            task: 'task1',
+            error: ''
+        }, {
+            type: "textarea",
+            label: 'Test Label',
+            inputId: 'test-id',
+            placeholder: 'Enter text',
+            task: 'task1',
+            error: 'Some error',
+        }
+    ]
 
+    it.each(testCases)('renders an input if "type" is "text"', async (props) => {
+        props = {
+            ...props,
+            'onUpdate:task': (e) => wrapper.setProps({ task: e }),
+            'onUpdate:error': (e) => wrapper.setProps({ error: e })
+        };
+        const wrapper = mount(InputWithError, { props });
 
+        const input_type = props.type;
 
-        const input = wrapper.find('input');
+        var input = input_type === 'textarea' ? wrapper.find('textarea') : wrapper.find('input');
+
         expect(input.exists()).toBe(true);
-        expect(input.attributes('type')).toBe('text');
+
+        expect(input.attributes('id')).toBe('test-id');
+
+        if (input_type !== 'textarea') {
+            expect(input.attributes('type')).toBe(input_type);
+        }
+        if (input_type === 'date') {
+            expect(input.attributes('min')).toBe(props.min);
+        }
+
         expect(input.attributes('placeholder')).toBe('Enter text');
-        expect(input.attributes('aria-invalid')).toBe("true");
-        expect(input.element.value).toBe('task1');
+        expect(input.element.value).toBe(props.task);
 
         const label = wrapper.find('label');
         expect(label.exists()).toBe(true);
@@ -34,70 +62,14 @@ describe('InputWithError.vue', () => {
         expect(label.attributes('for')).toBe('test-id');
 
         const errorMsg = wrapper.find('small');
-        expect(errorMsg.exists()).toBe(true);
-        expect(errorMsg.text()).toBe('Some error');
-
-    });
-    it('renders an input if "type" is "date" and no errors', async () => {
-        const wrapper = mount(InputWithError, {
-            props: {
-                type: 'date',
-                label: 'Test Label',
-                inputId: 'test-id',
-                min: "2018-01-01",
-                placeholder: 'Enter text',
-                task: '2018-01-02',
-                'onUpdate:task': (e) => wrapper.setProps({ task: e }),
-                error: '',
-                'onUpdate:error': (e) => wrapper.setProps({ error: e })
-            },
-        });
-
-        const input = wrapper.find('input');
-        expect(input.exists()).toBe(true);
-        expect(input.attributes('type')).toBe('date');
-        expect(input.attributes('placeholder')).toBe('Enter text');
-        expect(input.attributes('min')).toBe("2018-01-01");
-        expect(input.attributes('aria-invalid')).toBe("false");
-        expect(input.element.value).toBe('2018-01-02');
-
-        const label = wrapper.find('label');
-        expect(label.exists()).toBe(true);
-        expect(label.text()).toBe('Test Label');
-        expect(label.attributes('for')).toBe('test-id');
-
-        const errorMsg = wrapper.find('small');
-        expect(errorMsg.exists()).toBe(false);
-
-    });
-    it('renders a textarea if "type" is "textarea"', () => {
-        const wrapper = mount(InputWithError, {
-            props: {
-                type: 'textarea',
-                label: 'Test Label',
-                inputId: 'test-id',
-                placeholder: 'Enter text',
-                task: 'task1',
-                'onUpdate:task': (e) => wrapper.setProps({ task: e }),
-                error: 'Some error',
-                'onUpdate:error': (e) => wrapper.setProps({ error: e })
-            },
-        });
-
-        const input = wrapper.find('textarea');
-        expect(input.exists()).toBe(true);
-        expect(input.attributes('placeholder')).toBe('Enter text');
-        expect(input.attributes('aria-invalid')).toBe("true");
-        expect(input.element.value).toBe('task1');
-
-        const label = wrapper.find('label');
-        expect(label.exists()).toBe(true);
-        expect(label.text()).toBe('Test Label');
-        expect(label.attributes('for')).toBe('test-id');
-
-        const errorMsg = wrapper.find('small');
-        expect(errorMsg.exists()).toBe(true);
-        expect(errorMsg.text()).toBe('Some error');
+        if (props.error) {
+            expect(errorMsg.exists()).toBe(true);
+            expect(input.attributes('aria-invalid')).toBe("true");
+            expect(errorMsg.text()).toBe('Some error');
+        } else {
+            expect(errorMsg.exists()).toBe(false);
+            expect(input.attributes('aria-invalid')).toBe("false");
+        }
     });
 
     it.each([
